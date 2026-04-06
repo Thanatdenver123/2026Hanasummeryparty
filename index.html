@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hana Summer Party 2026</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body { background:#f1f5f9; font-family: 'Kanit', sans-serif; }
+.card:hover { transform:scale(1.05); transition:0.2s; }
+</style>
+</head>
+
+<body>
+
+<div class="max-w-7xl mx-auto p-6">
+
+<h1 class="text-3xl font-bold mb-6 flex items-center gap-2">
+🎉 Hana Summer Party 2026
+</h1>
+
+<div id="content" class="space-y-10">
+โหลดข้อมูล...
+</div>
+
+</div>
+
+<script>
+const API_KEY = "AIzaSyBnIUmU5oRM75p8OETC9fINXWJ3_TeFVFc";
+const ROOT_FOLDER = "1Et52WiWBv7xVkWu7fWwb6P6BMjxFk-B4";
+
+// 🔥 thumbnail เร็ว
+function imgUrl(id){
+  return `https://lh3.googleusercontent.com/d/${id}=w400`;
+}
+
+// 📁 โหลด folder
+async function getFolders(){
+  const res = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q='${ROOT_FOLDER}'+in+parents&key=${API_KEY}&fields=files(id,name,mimeType)`
+  );
+  const data = await res.json();
+
+  return data.files.filter(f=>f.mimeType==="application/vnd.google-apps.folder");
+}
+
+// 📷 โหลดรูป
+async function getImages(folderId){
+  const res = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&key=${API_KEY}&fields=files(id,name,mimeType)`
+  );
+  const data = await res.json();
+
+  return data.files
+    .filter(f=>f.mimeType.includes("image"))
+    .map(f=>({
+      id:f.id,
+      name:f.name,
+      url:imgUrl(f.id)
+    }));
+}
+
+// 🚀 โหลดทั้งหมด
+async function loadAll(){
+
+  const content = document.getElementById("content");
+  content.innerHTML = "กำลังโหลด...";
+
+  const folders = await getFolders();
+
+  content.innerHTML = "";
+
+  for(const folder of folders){
+
+    const images = await getImages(folder.id);
+
+    const section = document.createElement("div");
+
+    section.innerHTML = `
+      <div class="bg-white rounded-2xl shadow p-4">
+        <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          📁 ${folder.name}
+        </h2>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+      </div>
+    `;
+
+    const grid = section.querySelector("div div");
+
+    images.forEach(img=>{
+      const card = document.createElement("div");
+
+      card.innerHTML = `
+        <img src="${img.url}" 
+             class="w-full h-32 object-cover rounded-lg shadow card cursor-pointer"
+             loading="lazy">
+      `;
+
+      grid.appendChild(card);
+    });
+
+    content.appendChild(section);
+  }
+}
+
+// start
+loadAll();
+
+</script>
+
+</body>
+</html>
