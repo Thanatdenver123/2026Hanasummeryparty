@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hana Summer Party 2026 - Ultra Fast Gallery</title>
+    <title>Hana Summer Party 2026 - Ultra Fast Discovery</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
@@ -12,13 +12,12 @@
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; scroll-behavior: smooth; }
         .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
-        .image-card:hover { transform: scale(1.03); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .image-card:hover { transform: translateY(-4px); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .loader { border-top-color: #3b82f6; animation: spinner 0.8s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .animate-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .nav-btn { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); transition: 0.2s; }
-        .nav-btn:hover { background: rgba(255, 255, 255, 0.3); }
+        .nav-btn { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px); transition: 0.2s; }
         .indexing-bar { transition: width 0.3s ease; }
     </style>
 </head>
@@ -34,7 +33,7 @@
                 <div>
                     <h1 class="text-xl font-bold leading-none text-slate-900 uppercase">Hana Summer Party 2026</h1>
                     <div class="flex items-center gap-2 mt-1">
-                        <span id="indexStatus" class="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">System Ready</span>
+                        <span id="indexStatus" class="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider italic">เตรียม AI Search...</span>
                     </div>
                 </div>
             </div>
@@ -43,67 +42,65 @@
                 <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleVisualSearch(event)">
                 <button onclick="document.getElementById('imageInput').click()" 
                         class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full shadow-lg transition-all w-full justify-center active:scale-95">
-                    <i data-lucide="camera"></i>
-                    <span>ค้นหารูปถ่าย</span>
+                    <i data-lucide="camera" class="w-5 h-5"></i>
+                    <span>ค้นหาจากรูปภาพ</span>
                 </button>
             </div>
         </div>
-        <!-- Progress bar for AI Indexing -->
         <div class="absolute bottom-0 left-0 h-0.5 bg-blue-600 indexing-bar" style="width: 0%" id="indexProgress"></div>
     </nav>
 
     <main class="max-w-7xl mx-auto p-4 md:p-6">
         
-        <!-- API Setup (Hidden) -->
+        <!-- Error Guide -->
         <div id="setupGuide" class="hidden mb-10 p-8 bg-white border-2 border-red-100 rounded-[2.5rem] animate-in shadow-xl">
             <div class="flex flex-col md:flex-row gap-8 items-center">
-                <div class="bg-red-500 text-white p-6 rounded-3xl shadow-lg"><i data-lucide="shield-alert" class="w-12 h-12"></i></div>
+                <div class="bg-red-500 text-white p-6 rounded-3xl"><i data-lucide="shield-alert" class="w-12 h-12"></i></div>
                 <div class="flex-1">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-2">API Restricted (403)</h2>
-                    <p class="text-gray-600 mb-4">โปรดคัดลอกค่านี้ไปใส่ใน Google Cloud Console:</p>
-                    <div class="bg-slate-900 p-4 rounded-2xl flex items-center gap-4">
-                        <code id="wildcardValue" class="text-blue-400 font-mono text-sm break-all flex-1">*.usercontent.goog/*</code>
-                        <button onclick="copyToClipboard('wildcardValue')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Copy</button>
-                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2 tracking-tight">API Restricted (403)</h2>
+                    <p class="text-gray-600 mb-4">โปรดอนุญาตโดเมนในหน้า Console:</p>
+                    <code class="bg-slate-900 p-4 rounded-2xl block text-blue-400 font-mono text-sm break-all">*.usercontent.goog/*</code>
                 </div>
             </div>
         </div>
 
-        <!-- Search Results View Header -->
+        <!-- Search Results Preview -->
         <div id="searchPreview" class="hidden mb-10 p-8 bg-white border border-blue-100 rounded-[3rem] shadow-xl animate-in text-center">
             <h3 class="text-blue-600 font-bold mb-6 flex items-center justify-center gap-2 uppercase tracking-widest text-xs">
                 <i data-lucide="target" class="w-4 h-4"></i>
-                <span>Smart Search Results</span>
+                <span>ผลการค้นหาอัจฉริยะ</span>
             </h3>
             <div class="relative inline-block">
                 <img id="targetPreviewImg" class="h-44 w-44 object-cover rounded-3xl shadow-2xl border-4 border-white" src="" alt="Target">
-                <button onclick="resetSearch()" class="absolute -top-3 -right-3 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 shadow-lg active:scale-90 transition-all">
+                <button onclick="resetSearch()" class="absolute -top-3 -right-3 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 shadow-lg transition-all active:scale-90">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div id="searchStatusContainer" class="mt-6 flex flex-col items-center gap-2">
-                <p id="searchStatus" class="text-[10px] text-blue-500 font-bold uppercase tracking-widest italic">AI is matching...</p>
+            <div id="searchStatusContainer" class="mt-6">
+                <p id="searchStatus" class="text-[10px] text-blue-500 font-bold uppercase tracking-widest italic">AI กำลังเปรียบเทียบรูปภาพของคุณ...</p>
             </div>
         </div>
 
-        <!-- Initial Loader -->
+        <!-- Main Loader -->
         <div id="mainLoader" class="flex flex-col items-center justify-center py-32">
             <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-14 w-14 mb-6"></div>
-            <p class="text-slate-400 text-sm font-medium animate-pulse">กำลังดึงข้อมูลคลังสื่ออย่างรวดเร็ว...</p>
+            <p class="text-slate-400 text-sm font-medium animate-pulse uppercase tracking-widest">เพิ่มความเร็ว... ดึงเฉพาะรูปถ่าย</p>
         </div>
 
-        <!-- Gallery -->
+        <!-- Dynamic Gallery -->
         <div id="galleryContainer" class="space-y-12 pb-24"></div>
 
     </main>
 
     <!-- Modal View -->
     <div id="imageModal" class="fixed inset-0 bg-slate-900/98 backdrop-blur-2xl z-[100] hidden items-center justify-center p-4 select-none">
-        <button onclick="closeModal()" class="absolute top-4 right-4 md:top-8 md:right-8 bg-black/40 hover:bg-white/10 text-white p-5 rounded-full z-[120] transition-all active:scale-90 shadow-2xl border border-white/5">
+        
+        <!-- Large Close Button for Mobile -->
+        <button onclick="closeModal()" class="absolute top-4 right-4 md:top-8 md:right-8 bg-black/50 hover:bg-white/10 text-white p-5 rounded-full z-[120] transition-all active:scale-90 shadow-2xl">
             <i data-lucide="x" class="w-8 h-8"></i>
         </button>
 
-        <!-- Desktop Arrows -->
+        <!-- Arrows -->
         <button id="prevBtn" onclick="navigateMedia(-1)" class="nav-btn absolute left-8 top-1/2 -translate-y-1/2 text-white p-5 rounded-full z-[105] hidden lg:block active:scale-95">
             <i data-lucide="chevron-left" class="w-10 h-10"></i>
         </button>
@@ -114,7 +111,7 @@
         <div class="max-w-6xl w-full flex flex-col items-center gap-6 animate-in">
             <div id="modalContent" class="w-full flex justify-center items-center min-h-[40vh] md:min-h-[60vh]"></div>
             
-            <!-- Mobile Navigation (Bottom) -->
+            <!-- Mobile Nav (Bottom) -->
             <div class="flex lg:hidden gap-12 mt-2">
                  <button onclick="navigateMedia(-1)" class="bg-white/10 p-5 rounded-full text-white active:bg-blue-600 transition-colors shadow-lg">
                     <i data-lucide="chevron-left" class="w-8 h-8"></i>
@@ -125,13 +122,13 @@
             </div>
 
             <div class="flex flex-col sm:flex-row justify-center gap-4 w-full px-6">
-                <a id="downloadBtn" href="#" download class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl font-bold active:scale-95 transition-all">
-                    <i data-lucide="download" class="w-5 h-5"></i>
-                    <span>ดาวน์โหลด</span>
+                <a id="downloadBtn" href="#" download class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl font-bold active:scale-95 transition-all text-lg">
+                    <i data-lucide="download" class="w-6 h-6"></i>
+                    <span>ดาวน์โหลดรูปนี้</span>
                 </a>
                 <a id="driveBtn" href="#" target="_blank" class="bg-white/10 hover:bg-white/20 text-white px-10 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all border border-white/5 active:scale-95">
                     <i data-lucide="external-link" class="w-5 h-5"></i>
-                    <span>Google Drive</span>
+                    <span>ดูต้นฉบับบน Drive</span>
                 </a>
             </div>
         </div>
@@ -146,15 +143,13 @@
         let currentDisplayList = []; 
         let currentIndex = -1;
         let mediaEmbeddings = new Map(); 
-        let indexingQueue = [];
         let isIndexing = false;
 
         lucide.createIcons();
 
-        // Optimized Init
+        // Optimized Start
         window.onload = async () => {
             try {
-                // Parallel load model and folders
                 const modelTask = mobilenet.load();
                 await fetchRecursive(ROOT_FOLDER, "Root");
                 
@@ -164,52 +159,69 @@
                 if (allMedia.length > 0) {
                     startBackgroundIndexing();
                 } else {
-                    document.getElementById('galleryContainer').innerHTML = `<div class="text-center py-20 text-slate-400">ไม่พบสื่อในคลัง</div>`;
+                    document.getElementById('galleryContainer').innerHTML = `<div class="text-center py-20 text-slate-400">ไม่พบรูปภาพในคลัง</div>`;
                 }
             } catch (error) {
                 if (error.message.includes("403")) document.getElementById('setupGuide').classList.remove('hidden');
-                else showMessageBox("Error: " + error.message);
+                else console.error(error);
             }
         };
 
-        // Recursive with optimized parallel fetch inside folders
+        // Fetch Logic (Prioritize Images for Speed)
         async function fetchRecursive(folderId, folderName) {
             try {
+                // Focus only on images as requested for fast performance
                 const res = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,webContentLink,thumbnailLink)&pageSize=1000&key=${API_KEY}`);
                 const data = await res.json();
                 const items = data.files || [];
 
                 const subFolders = items.filter(i => i.mimeType === 'application/vnd.google-apps.folder');
-                const mediaFiles = items.filter(i => i.mimeType.includes('image/') || i.mimeType.includes('video/'));
+                const imageFiles = items.filter(i => i.mimeType.includes('image/'));
+                const videoFiles = items.filter(i => i.mimeType.includes('video/'));
 
-                if (mediaFiles.length > 0) {
-                    let cleanTitle = folderName.replace(/^Root\s*\/?\s*/, "") || "คลังสื่อหลัก";
-                    const mapped = mediaFiles.map(f => ({
+                // Handle Images
+                if (imageFiles.length > 0) {
+                    let cleanTitle = folderName.replace(/^Root\s*\/?\s*/, "") || "คลังรูปภาพรวม";
+                    const mapped = imageFiles.map(f => ({
                         id: f.id,
                         name: f.name,
                         mimeType: f.mimeType,
                         driveLink: f.webContentLink,
-                        url: f.mimeType.includes('image') ? `https://lh3.googleusercontent.com/d/${f.id}=w1600` : f.webContentLink,
-                        thumb: f.thumbnailLink ? f.thumbnailLink.replace(/=s\d+/, '=s400') : `https://lh3.googleusercontent.com/d/${f.id}=w400`,
+                        url: `https://lh3.googleusercontent.com/d/${f.id}=w1600`,
+                        thumb: f.thumbnailLink ? f.thumbnailLink.replace(/=s\d+/, '=s300') : `https://lh3.googleusercontent.com/d/${f.id}=w300`,
                         folderName: cleanTitle
                     }));
                     allMedia.push(...mapped);
                     if (currentDisplayList.length === 0) currentDisplayList = allMedia;
                     renderFolderSection(cleanTitle, mapped);
-                    indexingQueue.push(...mapped);
+                }
+                
+                // Handle Videos (Separately and skipping indexing to keep it fast)
+                if (videoFiles.length > 0) {
+                    let cleanTitle = folderName.replace(/^Root\s*\/?\s*/, "") || "คลังวิดีโอ";
+                    const mappedVideo = videoFiles.map(f => ({
+                        id: f.id,
+                        name: f.name,
+                        mimeType: f.mimeType,
+                        driveLink: `https://drive.google.com/file/d/${f.id}/view`,
+                        thumb: f.thumbnailLink ? f.thumbnailLink.replace(/=s\d+/, '=s400') : `https://via.placeholder.com/400x300?text=VIDEO`,
+                        folderName: cleanTitle,
+                        isVideo: true
+                    }));
+                    renderFolderSection(cleanTitle + " (Video)", mappedVideo);
                 }
 
-                // Process subfolders in parallel to save time
                 await Promise.all(subFolders.map(sub => fetchRecursive(sub.id, `${folderName} / ${sub.name}`)));
             } catch (e) { console.warn("Fetch Error:", e); }
         }
 
-        // Background Indexing Logic - The Secret to Instant Search
+        // Fast Indexing
         async function startBackgroundIndexing() {
             if (isIndexing || !net) return;
             isIndexing = true;
             
-            const total = indexingQueue.length;
+            const list = allMedia.filter(m => !m.isVideo);
+            const total = list.length;
             let count = 0;
 
             const updateBar = (p) => {
@@ -218,24 +230,19 @@
                 if(p >= 100) {
                     setTimeout(() => {
                         document.getElementById('indexProgress').style.opacity = '0';
-                        document.getElementById('indexStatus').innerText = 'Ready to Search';
-                        document.getElementById('indexStatus').classList.replace('bg-blue-100', 'bg-green-100');
-                        document.getElementById('indexStatus').classList.replace('text-blue-600', 'text-green-600');
+                        document.getElementById('indexStatus').innerText = 'AI Ready';
                     }, 1000);
                 }
             };
 
-            for (let item of indexingQueue) {
-                if (mediaEmbeddings.has(item.id)) continue;
+            for (let item of list) {
                 try {
-                    // Use a very small image for super fast inference
                     const vector = await getImageEmbedding(item.thumb);
                     mediaEmbeddings.set(item.id, vector);
-                } catch (e) { /* skip faulty images */ }
+                } catch (e) {}
                 count++;
                 updateBar((count / total) * 100);
-                // Give some breathing room to the UI thread
-                if (count % 3 === 0) await new Promise(r => setTimeout(r, 10));
+                if (count % 5 === 0) await new Promise(r => setTimeout(r, 1));
             }
             isIndexing = false;
         }
@@ -252,107 +259,106 @@
                 document.getElementById('galleryContainer').classList.add('opacity-30');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
-                // Inference for the search target
+                const startTime = performance.now();
+
                 setTimeout(async () => {
                     const targetActivation = await net.infer(previewImg, true);
                     const targetVector = await targetActivation.data();
 
-                    // If not indexed yet, index on the fly (prioritized)
                     const results = [];
                     for (let item of allMedia) {
+                        if (item.isVideo) continue; // Search in photos only for max speed
                         let featureVector = mediaEmbeddings.get(item.id);
                         if (!featureVector) {
                             try {
                                 featureVector = await getImageEmbedding(item.thumb);
                                 mediaEmbeddings.set(item.id, featureVector);
-                            } catch (e) { featureVector = null; }
+                            } catch (e) { continue; }
                         }
-                        if (featureVector) {
-                            results.push({ ...item, score: cosineSimilarity(targetVector, featureVector) });
-                        }
+                        results.push({ ...item, score: cosineSimilarity(targetVector, featureVector) });
                     }
 
                     results.sort((a, b) => b.score - a.score);
+                    const endTime = performance.now();
+                    const duration = ((endTime - startTime) / 1000).toFixed(2);
+                    
                     currentDisplayList = results; 
-                    displaySearchResults(results);
+                    displaySearchResults(results, duration);
                 }, 50);
             };
             reader.readAsDataURL(file);
         }
 
-        // Standard Utility Functions
-        function renderFolderSection(title, files) {
-            const container = document.getElementById('galleryContainer');
-            const section = document.createElement('section');
-            section.className = 'animate-in mb-8';
-            section.innerHTML = `
-                <div class="flex items-center gap-4 mb-5 px-2">
-                    <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                        <i data-lucide="folder" class="w-3 h-3"></i> ${title}
-                    </h2>
-                    <div class="h-px bg-slate-200 flex-1"></div>
-                </div>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 px-2"></div>
-            `;
-            const grid = section.querySelector('.grid');
-            files.forEach(file => grid.appendChild(createMediaCard(file)));
-            container.appendChild(section);
-            lucide.createIcons();
-        }
-
-        function createMediaCard(file) {
-            const div = document.createElement('div');
-            const isVideo = file.mimeType.includes('video');
-            div.className = 'image-card bg-white rounded-2xl shadow-sm overflow-hidden cursor-pointer border-2 border-white hover:shadow-xl transition-all relative group';
-            div.onclick = () => {
-                currentIndex = currentDisplayList.findIndex(m => m.id === file.id);
-                openModal(file);
-            };
-            div.innerHTML = `
-                <div class="aspect-square bg-slate-50 relative overflow-hidden">
-                    <img src="${file.thumb}" class="w-full h-full object-cover opacity-0 transition-opacity duration-300" onload="this.style.opacity='1'" crossorigin="anonymous" loading="lazy">
-                    ${isVideo ? `<div class="absolute inset-0 flex items-center justify-center bg-black/20"><i data-lucide="play" class="text-white fill-white w-8 h-8"></i></div>` : ''}
-                </div>
-            `;
-            return div;
-        }
-
-        function displaySearchResults(results) {
+        // Updated Search Display (Percentage & Time below Image)
+        function displaySearchResults(results, time) {
             const container = document.getElementById('galleryContainer');
             container.classList.remove('opacity-30');
             container.innerHTML = `
                 <div class="animate-in px-2">
-                    <div class="flex items-center gap-4 mb-8"><h2 class="text-xl font-bold text-blue-600 uppercase italic">🎯 Top Matches</h2><div class="h-1 bg-blue-100 flex-1 rounded-full"></div></div>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
+                    <div class="flex items-center gap-4 mb-8"><h2 class="text-xl font-bold text-blue-600 uppercase">🎯 Smart Matches</h2><div class="h-1 bg-blue-100 flex-1 rounded-full"></div></div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
                         ${results.map((f, idx) => `
-                            <div class="image-card bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer relative border-4 border-white" onclick='openSearchModal(${idx})'>
-                                <div class="aspect-square relative">
+                            <div class="image-card bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer relative border-4 border-white flex flex-col" onclick='openSearchModal(${idx})'>
+                                <div class="aspect-square relative overflow-hidden bg-slate-100">
                                     <img src="${f.thumb}" class="w-full h-full object-cover">
-                                    <div class="absolute bottom-2 right-2 bg-blue-600 text-white text-[9px] px-2 py-1 rounded-lg font-bold shadow-lg">${Math.round(f.score * 100)}% Match</div>
                                 </div>
-                                <div class="p-3 text-[9px] text-slate-400 font-bold uppercase truncate text-center">${f.folderName}</div>
+                                <div class="p-3 text-center bg-white">
+                                    <div class="text-blue-600 font-bold text-sm">${Math.round(f.score * 100)}% Match</div>
+                                    <div class="text-[9px] text-slate-400 font-medium uppercase mt-1">Processed in ${time}s</div>
+                                    <div class="text-[9px] text-slate-300 truncate mt-1">${f.folderName}</div>
+                                </div>
                             </div>
                         `).join('')}
                     </div>
                 </div>
             `;
             lucide.createIcons();
-            document.getElementById('searchStatus').innerText = "Matched " + results.length + " items";
+            document.getElementById('searchStatus').innerText = "ค้นพบ " + results.length + " รูปที่ใกล้เคียง";
+        }
+
+        function renderFolderSection(title, files) {
+            const container = document.getElementById('galleryContainer');
+            const section = document.createElement('section');
+            section.className = 'animate-in mb-8';
+            section.innerHTML = `
+                <div class="flex items-center gap-4 mb-5 px-2">
+                    <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <i data-lucide="folder" class="w-3 h-3"></i> ${title}
+                    </h2>
+                    <div class="h-px bg-slate-200 flex-1"></div>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 px-2"></div>
+            `;
+            const grid = section.querySelector('.grid');
+            files.forEach(file => {
+                const div = document.createElement('div');
+                div.className = 'image-card bg-white rounded-2xl shadow-sm overflow-hidden cursor-pointer border-2 border-white hover:shadow-xl transition-all relative';
+                div.onclick = () => {
+                    if (file.isVideo) window.open(file.driveLink, '_blank');
+                    else {
+                        currentIndex = currentDisplayList.findIndex(m => m.id === file.id);
+                        openModal(file);
+                    }
+                };
+                div.innerHTML = `
+                    <div class="aspect-square bg-slate-50 relative">
+                        <img src="${file.thumb}" class="w-full h-full object-cover opacity-0 transition-opacity" onload="this.style.opacity='1'" crossorigin="anonymous" loading="lazy">
+                        ${file.isVideo ? `<div class="absolute inset-0 flex items-center justify-center bg-black/30"><i data-lucide="play" class="text-white fill-white w-10 h-10"></i></div>` : ''}
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+            container.appendChild(section);
+            lucide.createIcons();
         }
 
         function openSearchModal(index) { currentIndex = index; openModal(currentDisplayList[currentIndex]); }
 
         async function getImageEmbedding(url) {
             return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.crossOrigin = "anonymous";
-                img.src = url;
+                const img = new Image(); img.crossOrigin = "anonymous"; img.src = url;
                 img.onload = async () => {
-                    try {
-                        const activation = await net.infer(img, true);
-                        const vector = await activation.data();
-                        resolve(vector);
-                    } catch (e) { reject(e); }
+                    try { const activation = await net.infer(img, true); resolve(await activation.data()); } catch (e) { reject(e); }
                 };
                 img.onerror = reject;
             });
@@ -372,18 +378,15 @@
             const modal = document.getElementById('imageModal');
             const content = document.getElementById('modalContent');
             const downloadBtn = document.getElementById('downloadBtn');
-            const driveBtn = document.getElementById('driveBtn');
             content.innerHTML = '<div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-10 w-10"></div>';
-            if (file.mimeType.includes('video')) {
-                content.innerHTML = `<video src="${file.driveLink}" controls autoplay class="max-w-full max-h-[60vh] rounded-2xl shadow-2xl bg-black"></video>`;
-            } else {
-                const img = new Image();
-                img.src = file.url;
-                img.className = "max-w-full max-h-[65vh] md:max-h-[80vh] rounded-3xl shadow-2xl border-4 border-white/5 animate-in object-contain";
-                img.onload = () => { content.innerHTML = ''; content.appendChild(img); };
-            }
+            
+            const img = new Image();
+            img.src = file.url;
+            img.className = "max-w-full max-h-[65vh] md:max-h-[80vh] rounded-3xl shadow-2xl animate-in object-contain";
+            img.onload = () => { content.innerHTML = ''; content.appendChild(img); };
+            
             downloadBtn.href = `https://drive.google.com/uc?export=download&id=${file.id}`;
-            driveBtn.href = `https://drive.google.com/file/d/${file.id}/view`;
+            document.getElementById('driveBtn').href = `https://drive.google.com/file/d/${file.id}/view`;
             modal.classList.replace('hidden', 'flex');
             document.body.style.overflow = 'hidden';
             updateNavButtons();
@@ -407,13 +410,6 @@
             const text = document.getElementById(id).innerText;
             const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el);
             el.select(); document.execCommand('copy'); document.body.removeChild(el);
-            showMessageBox("Copied!");
-        }
-        function showMessageBox(msg) {
-            const box = document.createElement('div');
-            box.className = 'fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-8 py-3 rounded-2xl shadow-2xl z-[200] animate-in text-sm font-medium';
-            box.innerText = msg; document.body.appendChild(box);
-            setTimeout(() => box.remove(), 3000);
         }
     </script>
 </body>
