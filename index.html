@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hana Summer Party 2026 - Smart Gallery</title>
+    <title>Hana Summer Party 2026 - Smart Gallery & Video</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
@@ -17,6 +17,7 @@
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .animate-in { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .video-indicator { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
     </style>
 </head>
 <body class="text-slate-800">
@@ -29,8 +30,8 @@
                     <i data-lucide="sparkles"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold leading-none">Hana Summer Party</h1>
-                    <span class="text-xs text-blue-600 font-medium uppercase tracking-wider">Smart Photo Search 2026</span>
+                    <h1 class="text-xl font-bold leading-none text-slate-900">Hana Summer Party</h1>
+                    <span class="text-xs text-blue-600 font-medium uppercase tracking-wider">Smart Media Search 2026</span>
                 </div>
             </div>
 
@@ -47,7 +48,7 @@
 
     <main class="max-w-7xl mx-auto p-4 md:p-6">
         
-        <!-- API 403 Error Setup Guide (Hidden by default) -->
+        <!-- API 403 Error Setup Guide -->
         <div id="setupGuide" class="hidden mb-10 p-8 bg-white border-2 border-red-100 rounded-[2.5rem] animate-in shadow-2xl shadow-red-200/20">
             <div class="flex flex-col md:flex-row gap-8 items-center">
                 <div class="bg-red-500 text-white p-6 rounded-3xl shadow-xl shadow-red-200">
@@ -55,60 +56,57 @@
                 </div>
                 <div class="flex-1 text-center md:text-left">
                     <h2 class="text-3xl font-bold text-gray-900 mb-2 tracking-tight">API Key ถูกจำกัดสิทธิ์ (Error 403)</h2>
-                    <p class="text-gray-600 mb-6 leading-relaxed">
-                        โปรดเพิ่ม URL ทดสอบนี้ลงใน <strong>Website restrictions</strong> ของ Google Cloud เพื่อให้ระบบดึงภาพได้:
-                    </p>
-                    <div class="bg-slate-900 p-5 rounded-3xl shadow-inner flex flex-col md:flex-row items-center gap-4">
+                    <p class="text-gray-600 mb-6 leading-relaxed">โปรดเพิ่มโดเมนทดสอบลงใน Google Cloud Console:</p>
+                    <div class="bg-slate-900 p-5 rounded-3xl flex flex-col md:flex-row items-center gap-4">
                         <code id="wildcardValue" class="text-blue-400 font-mono text-sm break-all flex-1">*.usercontent.goog/*</code>
-                        <button onclick="copyToClipboard('wildcardValue')" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-xl text-xs font-bold transition-all">คัดลอกค่านี้</button>
+                        <button onclick="copyToClipboard('wildcardValue')" class="bg-blue-600 text-white px-6 py-2 rounded-xl text-xs font-bold">คัดลอก</button>
                     </div>
-                    <button onclick="window.location.reload()" class="mt-8 bg-slate-100 px-8 py-3 rounded-full font-bold hover:bg-slate-200 transition-all">ตั้งค่าแล้ว รีเฟรชหน้าเว็บ</button>
                 </div>
             </div>
         </div>
 
-        <!-- Visual Search Result Header -->
+        <!-- Visual Search Preview -->
         <div id="searchPreview" class="hidden mb-10 p-8 bg-white border border-blue-100 rounded-[3rem] shadow-xl animate-in text-center">
             <h3 class="text-blue-600 font-bold mb-6 flex items-center justify-center gap-2">
                 <i data-lucide="search" class="w-5 h-5"></i>
-                <span>กำลังแสดงรูปภาพที่ใกล้เคียงที่สุด</span>
+                <span>กำลังแสดงสื่อที่ใกล้เคียงที่สุด</span>
             </h3>
             <div class="relative inline-block group">
                 <img id="targetPreviewImg" class="h-48 w-48 object-cover rounded-3xl shadow-2xl border-4 border-white" src="" alt="Target">
-                <button onclick="resetSearch()" class="absolute -top-3 -right-3 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow-lg active:scale-90 transition-all">
+                <button onclick="resetSearch()" class="absolute -top-3 -right-3 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow-lg">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
             <div class="mt-6 flex flex-col items-center gap-2">
                 <div id="searchSpinner" class="loader ease-linear rounded-full border-3 border-t-3 border-gray-200 h-6 w-6"></div>
-                <p id="searchStatus" class="text-sm text-blue-500 font-medium">AI กำลังวิเคราะห์ลักษณะรูปภาพ...</p>
+                <p id="searchStatus" class="text-sm text-blue-500 font-medium">AI กำลังวิเคราะห์ข้อมูลสื่อ...</p>
             </div>
         </div>
 
-        <!-- Initial Loader -->
+        <!-- Main Loader -->
         <div id="mainLoader" class="flex flex-col items-center justify-center py-32">
             <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-16 w-16 mb-6"></div>
-            <p class="text-slate-400 text-lg font-light tracking-wide">กำลังเชื่อมต่อฐานข้อมูลภาพและ AI Model...</p>
+            <p class="text-slate-400 text-lg">กำลังรวบรวมไฟล์ภาพและวิดีโอจากโฟลเดอร์ซ้อนทั้งหมด...</p>
         </div>
 
-        <!-- Dynamic Content (Folders and Images) -->
-        <div id="galleryContainer" class="space-y-12">
-            <!-- Folders will be injected here -->
-        </div>
+        <!-- Gallery Container -->
+        <div id="galleryContainer" class="space-y-12"></div>
 
     </main>
 
-    <!-- Full Image Modal -->
+    <!-- Modal for Media View -->
     <div id="imageModal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
         <button onclick="closeModal()" class="absolute top-6 right-6 text-white/50 hover:text-white p-2">
             <i data-lucide="x" class="w-10 h-10"></i>
         </button>
         <div class="max-w-5xl w-full flex flex-col items-center gap-6 animate-in">
-            <img id="modalImg" src="" class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl shadow-black/50 border border-white/10">
+            <div id="modalContent" class="w-full flex justify-center">
+                <!-- Image or Video will be injected here -->
+            </div>
             <div class="flex gap-4">
                 <a id="downloadBtn" href="#" target="_blank" class="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-full flex items-center gap-2 transition-all border border-white/10">
                     <i data-lucide="external-link" class="w-5 h-5"></i>
-                    <span>ดูรูปบน Google Drive</span>
+                    <span>เปิดบน Google Drive</span>
                 </a>
             </div>
         </div>
@@ -119,40 +117,26 @@
         const ROOT_FOLDER = '1Et52WiWBv7xVkWu7fWwb6P6BMjxFk-B4';
         
         let net = null; 
-        let allImages = []; 
-        let imageEmbeddings = new Map(); 
+        let allMedia = []; 
+        let mediaEmbeddings = new Map(); 
 
         lucide.createIcons();
 
-        // 1. Core Logic: Initial Data Fetching
+        // 1. Core Logic: Recursive Fetching
         window.onload = async () => {
             try {
-                // Pre-load AI Model
                 net = await mobilenet.load();
                 console.log('AI Model Loaded');
 
-                // Step 1: Get Sub-folders
-                const folderRes = await fetch(`https://www.googleapis.com/drive/v3/files?q='${ROOT_FOLDER}'+in+parents+and+mimeType='application/vnd.google-apps.folder'&fields=files(id,name)&key=${API_KEY}`);
-                
-                if (!folderRes.ok) {
-                    if (folderRes.status === 403) throw new Error("403");
-                    throw new Error("Folder load failed");
-                }
+                // เริ่มต้นดึงข้อมูลแบบ Recursive จาก Root
+                await fetchRecursive(ROOT_FOLDER, "Root");
 
-                const folderData = await folderRes.json();
-                const folders = folderData.files || [];
-
-                if (folders.length === 0) {
-                    document.getElementById('galleryContainer').innerHTML = `<div class="text-center py-20 text-slate-400">ไม่พบโฟลเดอร์รูปภาพใน Root นี้</div>`;
-                } else {
-                    // Step 2: Fetch images from each folder
-                    for (const folder of folders) {
-                        await fetchImagesFromFolder(folder);
-                    }
+                if (allMedia.length === 0) {
+                    document.getElementById('galleryContainer').innerHTML = `<div class="text-center py-20 text-slate-400">ไม่พบไฟล์สื่อในคลังนี้</div>`;
                 }
             } catch (error) {
                 console.error(error);
-                if (error.message === "403") {
+                if (error.message.includes("403")) {
                     document.getElementById('setupGuide').classList.remove('hidden');
                 } else {
                     showMessageBox("เกิดข้อผิดพลาด: " + error.message);
@@ -162,69 +146,88 @@
             }
         };
 
-        async function fetchImagesFromFolder(folder) {
+        async function fetchRecursive(folderId, folderName) {
             try {
-                const res = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folder.id}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,webContentLink)&pageSize=100&key=${API_KEY}`);
+                // ดึงทั้งไฟล์และโฟลเดอร์ในระดับปัจจุบัน
+                const res = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,webContentLink,thumbnailLink)&pageSize=1000&key=${API_KEY}`);
                 const data = await res.json();
-                const files = data.files || [];
-                
-                if (files.length > 0) {
-                    const mappedFiles = files.map(f => ({
+                const items = data.files || [];
+
+                const subFolders = items.filter(i => i.mimeType === 'application/vnd.google-apps.folder');
+                const mediaFiles = items.filter(i => i.mimeType.includes('image/') || i.mimeType.includes('video/'));
+
+                // ถ้ามีไฟล์ในโฟลเดอร์นี้ ให้แสดงผล
+                if (mediaFiles.length > 0) {
+                    const mapped = mediaFiles.map(f => ({
                         id: f.id,
                         name: f.name,
+                        mimeType: f.mimeType,
                         driveLink: f.webContentLink,
-                        url: `https://lh3.googleusercontent.com/d/${f.id}=w800`,
-                        thumb: `https://lh3.googleusercontent.com/d/${f.id}=w300`,
-                        folderName: folder.name
+                        url: f.mimeType.includes('image') ? `https://lh3.googleusercontent.com/d/${f.id}=w1000` : f.webContentLink,
+                        thumb: f.thumbnailLink ? f.thumbnailLink.replace(/=s\d+/, '=s400') : `https://lh3.googleusercontent.com/d/${f.id}=w400`,
+                        folderName: folderName
                     }));
-                    
-                    allImages.push(...mappedFiles);
-                    renderFolderSection(folder.name, mappedFiles);
+                    allMedia.push(...mapped);
+                    renderFolderSection(folderName, mapped);
                 }
+
+                // Recursive call สำหรับโฟลเดอร์ย่อย
+                for (const sub of subFolders) {
+                    await fetchRecursive(sub.id, `${folderName} / ${sub.name}`);
+                }
+
             } catch (e) {
-                console.warn(`Failed to fetch images from folder: ${folder.name}`, e);
+                console.warn(`Error in ${folderName}:`, e);
             }
         }
 
         // 2. Rendering Logic
-        function renderFolderSection(folderName, files) {
+        function renderFolderSection(title, files) {
             const container = document.getElementById('galleryContainer');
-            
             const section = document.createElement('section');
             section.className = 'animate-in';
-            section.id = `folder-${folderName.replace(/\s+/g, '-')}`;
             
             section.innerHTML = `
                 <div class="flex items-center gap-4 mb-6">
-                    <h2 class="text-xl font-bold text-slate-800">📁 ${folderName}</h2>
+                    <h2 class="text-lg font-semibold text-slate-700 flex items-center gap-2">
+                        <i data-lucide="folder" class="w-5 h-5 text-blue-500"></i> ${title}
+                    </h2>
                     <div class="h-px bg-slate-200 flex-1"></div>
-                    <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">${files.length} รูป</span>
+                    <span class="text-[10px] font-bold text-slate-400 bg-white border border-slate-100 px-3 py-1 rounded-full uppercase">${files.length} ITEMS</span>
                 </div>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 gallery-grid"></div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
             `;
             
-            const grid = section.querySelector('.gallery-grid');
-            files.forEach(img => {
-                grid.appendChild(createImageCard(img));
+            const grid = section.querySelector('.grid');
+            files.forEach(file => {
+                grid.appendChild(createMediaCard(file));
             });
             
             container.appendChild(section);
+            lucide.createIcons();
         }
 
-        function createImageCard(img) {
+        function createMediaCard(file) {
             const div = document.createElement('div');
-            div.className = 'image-card bg-white rounded-2xl shadow-sm overflow-hidden cursor-pointer border border-white hover:shadow-xl transition-all';
-            div.onclick = () => openModal(img.url, img.driveLink);
+            const isVideo = file.mimeType.includes('video');
+            div.className = 'image-card bg-white rounded-2xl shadow-sm overflow-hidden cursor-pointer border border-white hover:shadow-xl transition-all relative group';
+            div.onclick = () => openModal(file);
             
             div.innerHTML = `
                 <div class="aspect-square bg-slate-100 relative overflow-hidden">
-                    <img src="${img.thumb}" alt="${img.name}" class="w-full h-full object-cover opacity-0 transition-opacity duration-500" onload="this.style.opacity='1'" crossorigin="anonymous">
+                    <img src="${file.thumb}" class="w-full h-full object-cover opacity-0 transition-opacity duration-500" onload="this.style.opacity='1'" crossorigin="anonymous">
+                    ${isVideo ? `
+                        <div class="absolute inset-0 flex items-center justify-center video-indicator opacity-80 group-hover:opacity-100 transition-opacity">
+                            <i data-lucide="play" class="text-white fill-white w-8 h-8"></i>
+                        </div>
+                        <div class="absolute top-2 right-2 bg-blue-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase">VIDEO</div>
+                    ` : ''}
                 </div>
             `;
             return div;
         }
 
-        // 3. AI Visual Search Implementation
+        // 3. AI Comparison (Visual Search)
         async function handleVisualSearch(event) {
             const file = event.target.files[0];
             if (!file || !net) return;
@@ -233,61 +236,34 @@
             reader.onload = async (e) => {
                 const previewImg = document.getElementById('targetPreviewImg');
                 previewImg.src = e.target.result;
-                
-                // UI States
                 document.getElementById('searchPreview').classList.remove('hidden');
                 document.getElementById('galleryContainer').classList.add('opacity-40');
                 document.getElementById('searchSpinner').classList.remove('hidden');
-                document.getElementById('searchStatus').innerText = "AI กำลังสร้าง Feature Vector...";
-                
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
-                // Run AI Comparison after UI refresh
                 setTimeout(async () => {
-                    await runComparison(previewImg);
+                    const targetActivation = await net.infer(previewImg, true);
+                    const targetVector = await targetActivation.data();
+
+                    const results = [];
+                    for (let item of allMedia) {
+                        try {
+                            let featureVector;
+                            if (mediaEmbeddings.has(item.id)) {
+                                featureVector = mediaEmbeddings.get(item.id);
+                            } else {
+                                featureVector = await getImageEmbedding(item.thumb);
+                                mediaEmbeddings.set(item.id, featureVector);
+                            }
+                            results.push({ ...item, score: cosineSimilarity(targetVector, featureVector) });
+                        } catch (e) { results.push({ ...item, score: 0 }); }
+                    }
+
+                    results.sort((a, b) => b.score - a.score);
+                    displaySearchResults(results);
                 }, 100);
             };
             reader.readAsDataURL(file);
-        }
-
-        async function runComparison(targetElement) {
-            try {
-                // 1. Get Embedding for search target
-                const targetActivation = await net.infer(targetElement, true);
-                const targetVector = await targetActivation.data();
-
-                document.getElementById('searchStatus').innerText = "กำลังคำนวณความคล้ายกับรูปภาพทั้งหมด...";
-
-                const results = [];
-                for (let img of allImages) {
-                    try {
-                        let featureVector;
-                        if (imageEmbeddings.has(img.id)) {
-                            featureVector = imageEmbeddings.get(img.id);
-                        } else {
-                            // Extract features from current image thumb
-                            featureVector = await getImageEmbedding(img.thumb);
-                            imageEmbeddings.set(img.id, featureVector);
-                        }
-                        const score = cosineSimilarity(targetVector, featureVector);
-                        results.push({ ...img, score });
-                    } catch (e) {
-                        results.push({ ...img, score: 0 });
-                    }
-                }
-
-                // 2. Sort results
-                results.sort((a, b) => b.score - a.score);
-
-                // 3. Render Search Results View
-                displaySearchResults(results);
-                
-                document.getElementById('searchStatus').innerText = "ค้นหาเสร็จสมบูรณ์!";
-                document.getElementById('searchSpinner').classList.add('hidden');
-            } catch (err) {
-                console.error(err);
-                showMessageBox("AI Search ล้มเหลว: " + err.message);
-            }
         }
 
         function displaySearchResults(results) {
@@ -296,28 +272,30 @@
             container.innerHTML = `
                 <div class="animate-in">
                     <div class="flex items-center gap-4 mb-8">
-                        <h2 class="text-2xl font-bold text-blue-600">🎯 ผลการค้นหา (เรียงตามความคล้าย)</h2>
+                        <h2 class="text-2xl font-bold text-blue-600">🎯 ผลการค้นหา (รวมภาพและวิดีโอ)</h2>
                         <div class="h-1 bg-blue-100 flex-1 rounded-full"></div>
                     </div>
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                        ${results.map(img => `
-                            <div class="image-card bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer border-2 border-white hover:border-blue-200 transition-all" 
-                                 onclick="openModal('${img.url}', '${img.driveLink}')">
+                        ${results.map(f => `
+                            <div class="image-card bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer relative" onclick='openModal(${JSON.stringify(f).replace(/'/g, "&apos;")})'>
                                 <div class="aspect-square bg-slate-100 relative">
-                                    <img src="${img.thumb}" class="w-full h-full object-cover">
+                                    <img src="${f.thumb}" class="w-full h-full object-cover">
                                     <div class="absolute bottom-1 right-1 bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-                                        ${Math.round(img.score * 100)}% Match
+                                        ${Math.round(f.score * 100)}% Match
                                     </div>
+                                    ${f.mimeType.includes('video') ? '<div class="absolute inset-0 flex items-center justify-center bg-black/30"><i data-lucide="play" class="text-white fill-white w-8 h-8"></i></div>' : ''}
                                 </div>
-                                <div class="p-2 text-[10px] text-slate-400 truncate text-center">${img.folderName}</div>
+                                <div class="p-2 text-[10px] text-slate-400 truncate text-center">${f.folderName}</div>
                             </div>
                         `).join('')}
                     </div>
                 </div>
             `;
+            lucide.createIcons();
+            document.getElementById('searchSpinner').classList.add('hidden');
+            document.getElementById('searchStatus').innerText = "ค้นหาเสร็จสิ้น!";
         }
 
-        // AI Helpers
         async function getImageEmbedding(url) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
@@ -342,11 +320,26 @@
             return dotProduct / (Math.sqrt(mA) * Math.sqrt(mB));
         }
 
-        // 4. UI Utilities
-        function openModal(src, driveLink) {
+        // 4. Modal & UI Helpers
+        function openModal(file) {
             const modal = document.getElementById('imageModal');
-            document.getElementById('modalImg').src = src;
-            document.getElementById('downloadBtn').href = driveLink;
+            const content = document.getElementById('modalContent');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            content.innerHTML = '';
+            if (file.mimeType.includes('video')) {
+                // ดึงลิงก์วิดีโอแบบ Direct Play (ถ้าเป็น Google Drive อาจต้องใช้ WebView)
+                content.innerHTML = `<video src="${file.driveLink}" controls autoplay class="max-w-full max-h-[80vh] rounded-xl shadow-2xl"></video>`;
+                // หมายเหตุ: วิดีโอจาก Drive โดยตรงอาจติดปัญหา CORS หรือต้องเปิดผ่าน Player ของ Google
+                // หากวิดีโอไม่เล่น ให้ใช้การแสดง Thumbnail และปุ่มเปิดในแท็บใหม่แทน
+                if (!file.driveLink.includes('webContentLink')) {
+                     content.innerHTML = `<div class="text-center text-white"><img src="${file.thumb}" class="mb-4 rounded-xl"><p>วิดีโอนี้ต้องเปิดผ่าน Google Drive</p></div>`;
+                }
+            } else {
+                content.innerHTML = `<img src="${file.url}" class="max-w-full max-h-[85vh] rounded-xl shadow-2xl border border-white/10">`;
+            }
+            
+            downloadBtn.href = `https://drive.google.com/file/d/${file.id}/view`;
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             document.body.style.overflow = 'hidden';
@@ -354,14 +347,14 @@
 
         function closeModal() {
             const modal = document.getElementById('imageModal');
+            const content = document.getElementById('modalContent');
+            content.innerHTML = '';
             modal.classList.add('hidden');
             document.body.style.overflow = 'auto';
         }
 
-        function resetSearch() {
-            window.location.reload(); // Refresh to restore folder structure
-        }
-
+        function resetSearch() { window.location.reload(); }
+        
         function copyToClipboard(id) {
             const text = document.getElementById(id).innerText;
             const el = document.createElement('textarea');
@@ -370,391 +363,7 @@
             el.select();
             document.execCommand('copy');
             document.body.removeChild(el);
-            showMessageBox("คัดลอกแล้ว!");
-        }
-
-        function showMessageBox(msg) {
-            const box = document.createElement('div');
-            box.className = 'fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-8 py-3 rounded-2xl shadow-2xl z-[200] animate-in text-sm font-medium';
-            box.innerText = msg;
-            document.body.appendChild(box);
-            setTimeout(() => box.remove(), 4000);
-        }
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hana Summer Party 2026 - Smart Gallery</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; scroll-behavior: smooth; }
-        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
-        .image-card:hover { transform: scale(1.03); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .loader { border-top-color: #3b82f6; animation: spinner 1s linear infinite; }
-        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .animate-in { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
-</head>
-<body class="text-slate-800">
-
-    <!-- Navbar -->
-    <nav class="sticky top-0 z-50 glass shadow-sm px-4 py-3">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.reload()">
-                <div class="bg-blue-600 p-2.5 rounded-2xl text-white shadow-lg shadow-blue-200">
-                    <i data-lucide="sparkles"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold leading-none">Hana Summer Party</h1>
-                    <span class="text-xs text-blue-600 font-medium uppercase tracking-wider">Smart Photo Search 2026</span>
-                </div>
-            </div>
-
-            <div id="searchActions" class="flex items-center gap-3 w-full md:w-auto">
-                <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleVisualSearch(event)">
-                <button onclick="document.getElementById('imageInput').click()" 
-                        class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full shadow-lg shadow-blue-100 transition-all w-full justify-center active:scale-95">
-                    <i data-lucide="image-upscale" class="w-5 h-5"></i>
-                    <span>ค้นหาจากรูปภาพของคุณ</span>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto p-4 md:p-6">
-        
-        <!-- API 403 Error Setup Guide (Hidden by default) -->
-        <div id="setupGuide" class="hidden mb-10 p-8 bg-white border-2 border-red-100 rounded-[2.5rem] animate-in shadow-2xl shadow-red-200/20">
-            <div class="flex flex-col md:flex-row gap-8 items-center">
-                <div class="bg-red-500 text-white p-6 rounded-3xl shadow-xl shadow-red-200">
-                    <i data-lucide="shield-alert" class="w-12 h-12"></i>
-                </div>
-                <div class="flex-1 text-center md:text-left">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-2 tracking-tight">API Key ถูกจำกัดสิทธิ์ (Error 403)</h2>
-                    <p class="text-gray-600 mb-6 leading-relaxed">
-                        โปรดเพิ่ม URL ทดสอบนี้ลงใน <strong>Website restrictions</strong> ของ Google Cloud เพื่อให้ระบบดึงภาพได้:
-                    </p>
-                    <div class="bg-slate-900 p-5 rounded-3xl shadow-inner flex flex-col md:flex-row items-center gap-4">
-                        <code id="wildcardValue" class="text-blue-400 font-mono text-sm break-all flex-1">*.usercontent.goog/*</code>
-                        <button onclick="copyToClipboard('wildcardValue')" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-xl text-xs font-bold transition-all">คัดลอกค่านี้</button>
-                    </div>
-                    <button onclick="window.location.reload()" class="mt-8 bg-slate-100 px-8 py-3 rounded-full font-bold hover:bg-slate-200 transition-all">ตั้งค่าแล้ว รีเฟรชหน้าเว็บ</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Visual Search Result Header -->
-        <div id="searchPreview" class="hidden mb-10 p-8 bg-white border border-blue-100 rounded-[3rem] shadow-xl animate-in text-center">
-            <h3 class="text-blue-600 font-bold mb-6 flex items-center justify-center gap-2">
-                <i data-lucide="search" class="w-5 h-5"></i>
-                <span>กำลังแสดงรูปภาพที่ใกล้เคียงที่สุด</span>
-            </h3>
-            <div class="relative inline-block group">
-                <img id="targetPreviewImg" class="h-48 w-48 object-cover rounded-3xl shadow-2xl border-4 border-white" src="" alt="Target">
-                <button onclick="resetSearch()" class="absolute -top-3 -right-3 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow-lg active:scale-90 transition-all">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <div class="mt-6 flex flex-col items-center gap-2">
-                <div id="searchSpinner" class="loader ease-linear rounded-full border-3 border-t-3 border-gray-200 h-6 w-6"></div>
-                <p id="searchStatus" class="text-sm text-blue-500 font-medium">AI กำลังวิเคราะห์ลักษณะรูปภาพ...</p>
-            </div>
-        </div>
-
-        <!-- Initial Loader -->
-        <div id="mainLoader" class="flex flex-col items-center justify-center py-32">
-            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-16 w-16 mb-6"></div>
-            <p class="text-slate-400 text-lg font-light tracking-wide">กำลังเชื่อมต่อฐานข้อมูลภาพและ AI Model...</p>
-        </div>
-
-        <!-- Dynamic Content (Folders and Images) -->
-        <div id="galleryContainer" class="space-y-12">
-            <!-- Folders will be injected here -->
-        </div>
-
-    </main>
-
-    <!-- Full Image Modal -->
-    <div id="imageModal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
-        <button onclick="closeModal()" class="absolute top-6 right-6 text-white/50 hover:text-white p-2">
-            <i data-lucide="x" class="w-10 h-10"></i>
-        </button>
-        <div class="max-w-5xl w-full flex flex-col items-center gap-6 animate-in">
-            <img id="modalImg" src="" class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl shadow-black/50 border border-white/10">
-            <div class="flex gap-4">
-                <a id="downloadBtn" href="#" target="_blank" class="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-full flex items-center gap-2 transition-all border border-white/10">
-                    <i data-lucide="external-link" class="w-5 h-5"></i>
-                    <span>ดูรูปบน Google Drive</span>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const API_KEY = 'AIzaSyBnIUmU5oRM75p8OETC9fINXWJ3_TeFVFc';
-        const ROOT_FOLDER = '1Et52WiWBv7xVkWu7fWwb6P6BMjxFk-B4';
-        
-        let net = null; 
-        let allImages = []; 
-        let imageEmbeddings = new Map(); 
-
-        lucide.createIcons();
-
-        // 1. Core Logic: Initial Data Fetching
-        window.onload = async () => {
-            try {
-                // Pre-load AI Model
-                net = await mobilenet.load();
-                console.log('AI Model Loaded');
-
-                // Step 1: Get Sub-folders
-                const folderRes = await fetch(`https://www.googleapis.com/drive/v3/files?q='${ROOT_FOLDER}'+in+parents+and+mimeType='application/vnd.google-apps.folder'&fields=files(id,name)&key=${API_KEY}`);
-                
-                if (!folderRes.ok) {
-                    if (folderRes.status === 403) throw new Error("403");
-                    throw new Error("Folder load failed");
-                }
-
-                const folderData = await folderRes.json();
-                const folders = folderData.files || [];
-
-                if (folders.length === 0) {
-                    document.getElementById('galleryContainer').innerHTML = `<div class="text-center py-20 text-slate-400">ไม่พบโฟลเดอร์รูปภาพใน Root นี้</div>`;
-                } else {
-                    // Step 2: Fetch images from each folder
-                    for (const folder of folders) {
-                        await fetchImagesFromFolder(folder);
-                    }
-                }
-            } catch (error) {
-                console.error(error);
-                if (error.message === "403") {
-                    document.getElementById('setupGuide').classList.remove('hidden');
-                } else {
-                    showMessageBox("เกิดข้อผิดพลาด: " + error.message);
-                }
-            } finally {
-                document.getElementById('mainLoader').classList.add('hidden');
-            }
-        };
-
-        async function fetchImagesFromFolder(folder) {
-            try {
-                const res = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folder.id}'+in+parents+and+mimeType+contains+'image/'&fields=files(id,name,webContentLink)&pageSize=100&key=${API_KEY}`);
-                const data = await res.json();
-                const files = data.files || [];
-                
-                if (files.length > 0) {
-                    const mappedFiles = files.map(f => ({
-                        id: f.id,
-                        name: f.name,
-                        driveLink: f.webContentLink,
-                        url: `https://lh3.googleusercontent.com/d/${f.id}=w800`,
-                        thumb: `https://lh3.googleusercontent.com/d/${f.id}=w300`,
-                        folderName: folder.name
-                    }));
-                    
-                    allImages.push(...mappedFiles);
-                    renderFolderSection(folder.name, mappedFiles);
-                }
-            } catch (e) {
-                console.warn(`Failed to fetch images from folder: ${folder.name}`, e);
-            }
-        }
-
-        // 2. Rendering Logic
-        function renderFolderSection(folderName, files) {
-            const container = document.getElementById('galleryContainer');
-            
-            const section = document.createElement('section');
-            section.className = 'animate-in';
-            section.id = `folder-${folderName.replace(/\s+/g, '-')}`;
-            
-            section.innerHTML = `
-                <div class="flex items-center gap-4 mb-6">
-                    <h2 class="text-xl font-bold text-slate-800">📁 ${folderName}</h2>
-                    <div class="h-px bg-slate-200 flex-1"></div>
-                    <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">${files.length} รูป</span>
-                </div>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 gallery-grid"></div>
-            `;
-            
-            const grid = section.querySelector('.gallery-grid');
-            files.forEach(img => {
-                grid.appendChild(createImageCard(img));
-            });
-            
-            container.appendChild(section);
-        }
-
-        function createImageCard(img) {
-            const div = document.createElement('div');
-            div.className = 'image-card bg-white rounded-2xl shadow-sm overflow-hidden cursor-pointer border border-white hover:shadow-xl transition-all';
-            div.onclick = () => openModal(img.url, img.driveLink);
-            
-            div.innerHTML = `
-                <div class="aspect-square bg-slate-100 relative overflow-hidden">
-                    <img src="${img.thumb}" alt="${img.name}" class="w-full h-full object-cover opacity-0 transition-opacity duration-500" onload="this.style.opacity='1'" crossorigin="anonymous">
-                </div>
-            `;
-            return div;
-        }
-
-        // 3. AI Visual Search Implementation
-        async function handleVisualSearch(event) {
-            const file = event.target.files[0];
-            if (!file || !net) return;
-
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const previewImg = document.getElementById('targetPreviewImg');
-                previewImg.src = e.target.result;
-                
-                // UI States
-                document.getElementById('searchPreview').classList.remove('hidden');
-                document.getElementById('galleryContainer').classList.add('opacity-40');
-                document.getElementById('searchSpinner').classList.remove('hidden');
-                document.getElementById('searchStatus').innerText = "AI กำลังสร้าง Feature Vector...";
-                
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-
-                // Run AI Comparison after UI refresh
-                setTimeout(async () => {
-                    await runComparison(previewImg);
-                }, 100);
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function runComparison(targetElement) {
-            try {
-                // 1. Get Embedding for search target
-                const targetActivation = await net.infer(targetElement, true);
-                const targetVector = await targetActivation.data();
-
-                document.getElementById('searchStatus').innerText = "กำลังคำนวณความคล้ายกับรูปภาพทั้งหมด...";
-
-                const results = [];
-                for (let img of allImages) {
-                    try {
-                        let featureVector;
-                        if (imageEmbeddings.has(img.id)) {
-                            featureVector = imageEmbeddings.get(img.id);
-                        } else {
-                            // Extract features from current image thumb
-                            featureVector = await getImageEmbedding(img.thumb);
-                            imageEmbeddings.set(img.id, featureVector);
-                        }
-                        const score = cosineSimilarity(targetVector, featureVector);
-                        results.push({ ...img, score });
-                    } catch (e) {
-                        results.push({ ...img, score: 0 });
-                    }
-                }
-
-                // 2. Sort results
-                results.sort((a, b) => b.score - a.score);
-
-                // 3. Render Search Results View
-                displaySearchResults(results);
-                
-                document.getElementById('searchStatus').innerText = "ค้นหาเสร็จสมบูรณ์!";
-                document.getElementById('searchSpinner').classList.add('hidden');
-            } catch (err) {
-                console.error(err);
-                showMessageBox("AI Search ล้มเหลว: " + err.message);
-            }
-        }
-
-        function displaySearchResults(results) {
-            const container = document.getElementById('galleryContainer');
-            container.classList.remove('opacity-40');
-            container.innerHTML = `
-                <div class="animate-in">
-                    <div class="flex items-center gap-4 mb-8">
-                        <h2 class="text-2xl font-bold text-blue-600">🎯 ผลการค้นหา (เรียงตามความคล้าย)</h2>
-                        <div class="h-1 bg-blue-100 flex-1 rounded-full"></div>
-                    </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                        ${results.map(img => `
-                            <div class="image-card bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer border-2 border-white hover:border-blue-200 transition-all" 
-                                 onclick="openModal('${img.url}', '${img.driveLink}')">
-                                <div class="aspect-square bg-slate-100 relative">
-                                    <img src="${img.thumb}" class="w-full h-full object-cover">
-                                    <div class="absolute bottom-1 right-1 bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-                                        ${Math.round(img.score * 100)}% Match
-                                    </div>
-                                </div>
-                                <div class="p-2 text-[10px] text-slate-400 truncate text-center">${img.folderName}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }
-
-        // AI Helpers
-        async function getImageEmbedding(url) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.crossOrigin = "anonymous";
-                img.src = url;
-                img.onload = async () => {
-                    const activation = await net.infer(img, true);
-                    const vector = await activation.data();
-                    resolve(vector);
-                };
-                img.onerror = reject;
-            });
-        }
-
-        function cosineSimilarity(vecA, vecB) {
-            let dotProduct = 0, mA = 0, mB = 0;
-            for (let i = 0; i < vecA.length; i++) {
-                dotProduct += (vecA[i] * vecB[i]);
-                mA += (vecA[i] * vecA[i]);
-                mB += (vecB[i] * vecB[i]);
-            }
-            return dotProduct / (Math.sqrt(mA) * Math.sqrt(mB));
-        }
-
-        // 4. UI Utilities
-        function openModal(src, driveLink) {
-            const modal = document.getElementById('imageModal');
-            document.getElementById('modalImg').src = src;
-            document.getElementById('downloadBtn').href = driveLink;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('imageModal');
-            modal.classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
-        function resetSearch() {
-            window.location.reload(); // Refresh to restore folder structure
-        }
-
-        function copyToClipboard(id) {
-            const text = document.getElementById(id).innerText;
-            const el = document.createElement('textarea');
-            el.value = text;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            showMessageBox("คัดลอกแล้ว!");
+            showMessageBox("คัดลอกค่า Wildcard แล้ว!");
         }
 
         function showMessageBox(msg) {
